@@ -1,20 +1,14 @@
 # Workflow Dashboard
 
-A React + TypeScript dashboard implementing a simplified version of Workflows Library and Runs experience.
-
-Built as part of the Frontend Intern take-home assignment.
+A React + TypeScript dashboard for managing workflows and inspecting their runs — workflow list, run history, and a detailed run timeline view.
 
 ## Quick Start
 
-```bash
+```
 npm install && npm run dev
 ```
 
-Open:
-
-```text
-http://localhost:5173
-```
+Open `http://localhost:5173`
 
 ---
 
@@ -30,13 +24,9 @@ http://localhost:5173
 
 ---
 
-## Why I Chose shadcn/ui Instead of MUI
+## Why shadcn/ui Over MUI
 
-I chose shadcn/ui because the assignment emphasized matching the existing Deepvue dashboard aesthetic.
-
-shadcn/ui provides lightweight, composable primitives that integrate naturally with Tailwind CSS and allow full control over the visual design layer. This made it easier to recreate the dashboard styling shown in the reference screenshots.
-
-MUI would have provided more built-in components but also introduces a stronger default design system, which would require additional customization to match the target aesthetic.
+shadcn/ui gives lightweight, composable primitives that sit directly on top of Tailwind, with full control over the visual layer instead of fighting a default design system. For a dashboard where the styling needed to be specific rather than generic, that control mattered more than MUI's larger built-in component set.
 
 ---
 
@@ -44,197 +34,87 @@ MUI would have provided more built-in components but also introduces a stronger 
 
 ### Routing
 
-The application uses React Router with three routes:
-
-- `/workflows`
-- `/runs`
-- `/runs/:id`
+Three routes: `/workflows`, `/runs`, `/runs/:id`.
 
 ### Data Layer
 
-Mock JSON files are treated as API responses.
-
-Custom hooks provide access to the data:
-
-- `useWorkflows`
-- `useRuns`
-- `useRun`
-
-A simulated network delay is applied to reproduce realistic loading states.
+Mock JSON files stand in for API responses. Custom hooks (`useWorkflows`, `useRuns`, `useRun`) abstract the fetch, with a simulated network delay to reproduce realistic loading states.
 
 ### State Management
 
-No external state management library was used.
-
-State is handled through:
-
-- Local React state
-- URL query parameters
-- Derived state using `useMemo`
-
-This keeps complexity low while remaining appropriate for the size of the application.
+No external state library. State lives in local React state, URL query params, and derived `useMemo` values — enough for this size of app without adding a dependency.
 
 ---
 
 ## URL State
 
-The Workflows page persists:
+The Workflows page persists search, status filter, and sort order to the URL:
 
-- Search
-- Status filter
-- Sort order
-
-through URL query parameters.
-
-Examples:
-
-```text
+```
 /workflows?search=kyc
 /workflows?status=published
 /workflows?sort=name
 ```
 
-This allows:
-
-- Browser refresh persistence
-- Deep linking
-- Shareable filtered views
+This gives refresh persistence, deep linking, and shareable filtered views for free.
 
 ---
 
 ## Performance Decisions
 
-### Workflows
-
-The workflow grid uses virtualization with TanStack Virtual to ensure rendering remains efficient as dataset size grows.
-
-### Runs
-
-The runs page was designed with larger datasets in mind and tested against the provided mock data. The implementation structure supports applying the same virtualization strategy used elsewhere if the dataset grows significantly.
+- **Workflows** — the grid is virtualized with TanStack Virtual so render cost stays flat as the dataset grows.
+- **Runs** — built with larger datasets in mind; the structure supports applying the same virtualization if the run count grows significantly, even though it isn't needed at the current data size.
 
 ---
 
 ## Hover & Active States
 
-- **Workflow + Run cards** — `hover:border-violet-300 hover:shadow-md` on hover. Elevates the card subtly without layout shift, signals clickability without needing a cursor change alone.
-- **Status filter pills** — inactive pills use `hover:border-slate-300 hover:bg-slate-50`. Active pill gets the primary navy fill. Keeps the interaction cost low for frequent filter switching.
-- **Run modal** — Escape closes via Radix Dialog's built-in keyboard handling. Enter submits the form from the subject ID input.
-- **Bulk action bar** — slides in from the bottom on first selection. Stays sticky so it's always reachable without scrolling back up.
+- **Workflow + Run cards** — `hover:border-violet-300 hover:shadow-md`. Elevates the card without a layout shift, signals clickability without relying on cursor change alone.
+- **Status filter pills** — inactive pills use `hover:border-slate-300 hover:bg-slate-50`; active pill gets the primary navy fill. Keeps the interaction cost low for frequent filter switching.
+- **Run modal** — Escape closes via Radix Dialog's built-in keyboard handling; Enter submits from the subject ID input.
+- **Bulk action bar** — slides in from the bottom on first selection, stays sticky so it's reachable without scrolling back up.
 
---
+---
 
 ## Status Badge Palette
 
-### Positive States
-
-- Published
-- Completed
-- Succeeded
-
-Color: Emerald
-
-### Neutral States
-
-- Draft
-- Not Started
-
-Color: Slate
-
-### Archived
-
-Color: Stone
-
-### Running
-
-Color: Violet
-
-### Waiting / Pending
-
-Color: Amber
-
-### Failed
-
-Color: Rose
+| State | Color |
+|---|---|
+| Published / Completed / Succeeded | Emerald |
+| Draft / Not Started | Slate |
+| Archived | Stone |
+| Running | Violet |
+| Waiting / Pending | Amber |
+| Failed | Rose |
 
 ---
 
 ## Edge Cases Handled
 
-### Long Workflow Names
-
-Workflow names are truncated in cards to preserve layout integrity.
-
-### Future Last Modified Dates
-
-Future dates are surfaced rather than hidden, allowing potential data-quality issues to remain visible.
-
-### Workflow With 0 Nodes
-
-The node count is displayed as-is.
-
-### Missing Subject ID
-
-Runs without a subject ID display an em dash (`—`) instead of empty content.
-
-### Empty Run Steps
-
-Waiting runs with no steps render an empty state.
-
-### Warning Messages
-
-Runs containing warnings render a dedicated warning banner.
+- **Long workflow names** — truncated in cards to preserve layout.
+- **Future last-modified dates** — surfaced rather than hidden, so data-quality issues stay visible.
+- **Workflow with 0 nodes** — node count displayed as-is.
+- **Missing subject ID** — renders an em dash (`—`) instead of empty content.
+- **Empty run steps** — waiting runs with no steps render an empty state.
+- **Warning messages** — runs with warnings get a dedicated warning banner.
 
 ---
 
-## Features Implemented
+## Features
 
-### Workflows
+**Workflows** — search, debounced filtering, status filter pills with counts, sorting, URL sync, responsive grid, multi-select, bulk actions, run dialog, loading/error/empty states.
 
-- Search
-- Debounced filtering
-- Status filter pills with counts
-- Sorting
-- URL synchronization
-- Responsive grid
-- Workflow cards
-- Multi-select
-- Bulk actions
-- Run workflow dialog
-- Loading state
-- Error state
-- Empty state
+**Runs** — status filter pills with counts, progress visualization, relative timestamps, duration display, cancel actions, navigation to run detail, loading/error/empty states.
 
-### Runs
-
-- Status filter pills with counts
-- Progress visualization
-- Relative timestamps
-- Duration display
-- Cancel actions
-- Navigation to run detail page
-- Loading state
-- Error state
-- Empty state
-
-### Run Detail
-
-- Warning banner
-- Execution timeline
-- Step status indicators
-- JSON output rendering
-- Error rendering
-- Run metadata sidebar
-- Collapsible trigger input
-- Empty state
-- Not-found state
+**Run Detail** — warning banner, execution timeline, step status indicators, JSON output rendering, error rendering, metadata sidebar, collapsible trigger input, empty/not-found states.
 
 ---
 
-## What I Would Improve If i have more time
+## What I'd Improve With More Time
 
-- More comprehensive runs virtualization for very large datasets
+- Runs virtualization tuned for very large datasets
 - Keyboard navigation improvements
 - Animated expand/collapse interactions
-- Additional accessibility auditing
+- Deeper accessibility audit
 - More detailed execution analytics
 - Reusable loading skeleton system
